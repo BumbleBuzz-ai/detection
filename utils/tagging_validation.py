@@ -107,7 +107,7 @@ def tagging_validate(Df,fewlabels=fewlabels,dict_allcats=dict_allcats):
     ### And Finally let's do an estimation of BioPhony, Antropophony and Geophony level using audio tagging results 
     ### For that, we group the categories accordingly : 
 
-    macro_cat = {'geophony':['Wind', 'Rain', 'River', 'Wave', 'Thunder'],'biophony': ['Bird', 'Amphibian', 'Insect', 'Mammal', 'Reptile'], 'anthropophony': ['Walking', 'Cycling', 'Beep', 'Car', 'Car honk', 'Motorbike', 'Plane', 'Helicoptere', 'Boat', 'Others_motors', 'Shoot', 'Bell', 'Talking', 'Music', 'Kitchen sounds', 'Rolling shutter'],
+    macro_cat = {'geophony':['Wind', 'Rain', 'River', 'Wave', 'Thunder'],'biophony': ['Bird', 'Amphibian', 'Insect', 'Mammal', 'Reptile'], 'anthropophony': ['Walking', 'Cycling', 'Beep', 'Car', 'Car honk', 'Motorbike', 'Plane', 'Helicoptere', 'Boat', 'Others_motors', 'Shoot', 'Bell', 'Talking', 'Kitchen sounds', 'Rolling shutter'],
     'buzz':['Buzz'],
     'domesticanimals':['Dog bark','Rooster']}
 
