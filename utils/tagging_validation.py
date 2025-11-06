@@ -126,11 +126,11 @@ def tagging_validate(Df,fewlabels=fewlabels,dict_allcats=dict_allcats):
 
     
 
-        ### And Finally let's do an estimation of BioPhony, Antropophony and Geophony level using audio tagging results 
-        ### For that, we group the categories accordingly : 
-        Df_new = calculate_macro_categories(Df_new)
-        
-        return Df_new
+    ### And Finally let's do an estimation of BioPhony, Antropophony and Geophony level using audio tagging results 
+    ### For that, we group the categories accordingly : 
+    Df_new = calculate_macro_categories(Df_new)
+    
+    return Df_new
 
 
 if __name__ == '__main__':
