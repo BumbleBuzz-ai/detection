@@ -73,6 +73,24 @@ def load_obj_tag(name ):
     with open(name , 'rb') as f:
         return pickle.load(f)
 
+def calculate_macro_categories(Df_new):
+        macro_cat = {'geophony':['Wind', 'Rain', 'River', 'Wave', 'Thunder'],
+                    'biophony': ['Bird', 'Amphibian', 'Insect', 'Mammal', 'Reptile'], 
+                    'anthropophony': ['Walking', 'Cycling', 'Beep', 'Car', 'Car honk', 'Motorbike', 'Plane', 'Helicoptere', 'Boat', 'Others_motors', 'Shoot', 'Bell', 'Talking', 'Kitchen sounds', 'Rolling shutter'],
+                    'buzz':['Buzz'],
+                    'domesticanimals':['Dog bark','Rooster']}
+
+        for cursubcat in macro_cat.keys():
+            try:
+
+                curlabels = ['tag_' + i for i in macro_cat[cursubcat]]
+                curDf = Df_new[curlabels]
+                Df_new[cursubcat] = curDf.max(axis=1)
+            except:
+                Df_new[cursubcat] = -1.0
+            
+        return Df_new
+
 def tagging_validate(Df,fewlabels=fewlabels,dict_allcats=dict_allcats):
     
     probas,newlabellist,notfound = subset_probas(Df,fewlabels)
@@ -104,37 +122,31 @@ def tagging_validate(Df,fewlabels=fewlabels,dict_allcats=dict_allcats):
 
         Df_new[cursublabel] = probas_max
 
-    ### And Finally let's do an estimation of BioPhony, Antropophony and Geophony level using audio tagging results 
-    ### For that, we group the categories accordingly : 
+    
 
-    macro_cat = {'geophony':['Wind', 'Rain', 'River', 'Wave', 'Thunder'],'biophony': ['Bird', 'Amphibian', 'Insect', 'Mammal', 'Reptile'], 'anthropophony': ['Walking', 'Cycling', 'Beep', 'Car', 'Car honk', 'Motorbike', 'Plane', 'Helicoptere', 'Boat', 'Others_motors', 'Shoot', 'Bell', 'Talking', 'Kitchen sounds', 'Rolling shutter'],
-    'buzz':['Buzz'],
-    'domesticanimals':['Dog bark','Rooster']}
+    
 
-
-    ### and now we will calculate the average probability in each of the three macro categories 
-
-    for cursubcat in macro_cat.keys():
-        curlabels = ['tag_' + i for i in macro_cat[cursubcat]]
-
-        curDf = Df_new[curlabels]
-
-        Df_new[cursubcat] = curDf.max(axis=1)
-
-    return Df_new
+        ### And Finally let's do an estimation of BioPhony, Antropophony and Geophony level using audio tagging results 
+        ### For that, we group the categories accordingly : 
+        Df_new = calculate_macro_categories(Df_new)
+        
+        return Df_new
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Script to regroup tagging output into a csv file')
-    parser.add_argument('--input', default=None, type=str, help='Path to pkl file')
-    parser.add_argument('--save_path', default='/bigdisk2/meta_silentcities/tests_eco', type=str, help='Path to save output csv and pkl')
+    parser.add_argument('--input', default=None, type=str, help='Path to csv file')
 
     args = parser.parse_args()
 
-    site= str.split(args.input,sep='_')[-1].split(sep='.')[0]
-    savepath = args.save_path
-    CSV_SAVE = os.path.join(savepath,f'tagging_site_{site}.csv')
-    Df = load_obj_tag(args.input)
-    Df_new = tagging_validate(Df)
+    ## the filename is extracted from the input path but adding the "validated" suffix
+    
+    ## saved file is the same path as input file but adding _validated before .csv
+    base, ext = os.path.splitext(args.input)
+    CSV_SAVE = base + '_validated' + ext
+    
+    Df = pd.read_csv(args.input)
+
+    Df_new = calculate_macro_categories(Df)
 
     Df_new.sort_values(by=['datetime','start']).to_csv(CSV_SAVE,index=False)
