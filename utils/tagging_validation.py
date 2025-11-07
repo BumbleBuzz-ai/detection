@@ -8,6 +8,7 @@ import pandas as pd
 import argparse
 import pickle 
 import csv 
+import json
 
 
 
@@ -73,25 +74,32 @@ def load_obj_tag(name ):
     with open(name , 'rb') as f:
         return pickle.load(f)
 
-def calculate_macro_categories(Df_new):
-        macro_cat = {'geophony':['Wind', 'Rain', 'River', 'Wave', 'Thunder'],
-                    'biophony': ['Bird', 'Amphibian', 'Insect', 'Mammal', 'Reptile'], 
-                    'anthropophony': ['Walking', 'Cycling', 'Beep', 'Car', 'Car honk', 'Motorbike', 'Plane', 'Helicoptere', 'Boat', 'Others_motors', 'Shoot', 'Bell', 'Talking', 'Kitchen sounds', 'Rolling shutter'],
-                    'buzz':['Buzz'],
-                    'domesticanimals':['Dog bark','Rooster']}
+DEFAULT_MACRO_CAT = {
+    'geophony': ['Wind', 'Rain', 'River', 'Wave', 'Thunder'],
+    'biophony': ['Bird', 'Amphibian', 'Insect', 'Mammal', 'Reptile'],
+    'anthropophony': ['Walking', 'Cycling', 'Beep', 'Car', 'Car honk', 'Motorbike', 'Plane', 'Helicoptere', 'Boat', 'Others_motors', 'Shoot', 'Bell', 'Talking', 'Kitchen sounds', 'Rolling shutter'],
+    'buzz': ['Buzz'],
+    'domesticanimals': ['Dog bark', 'Rooster']
+}
 
-        for cursubcat in macro_cat.keys():
-            try:
+def calculate_macro_categories(Df_new, macro_cat=None):
+    """
+    Populate macro categories in Df_new. If macro_cat is None, uses DEFAULT_MACRO_CAT.
+    """
+    if macro_cat is None:
+        macro_cat = DEFAULT_MACRO_CAT
 
-                curlabels = ['tag_' + i for i in macro_cat[cursubcat]]
-                curDf = Df_new[curlabels]
-                Df_new[cursubcat] = curDf.max(axis=1)
-            except:
-                Df_new[cursubcat] = -1.0
-            
-        return Df_new
+    for cursubcat in macro_cat.keys():
+        try:
+            curlabels = ['tag_' + i for i in macro_cat[cursubcat]]
+            curDf = Df_new[curlabels]
+            Df_new[cursubcat] = curDf.max(axis=1)
+        except Exception:
+            Df_new[cursubcat] = -1.0
 
-def tagging_validate(Df,fewlabels=fewlabels,dict_allcats=dict_allcats):
+    return Df_new
+
+def tagging_validate(Df,fewlabels=fewlabels,dict_allcats=dict_allcats,macro_cat=DEFAULT_MACRO_CAT):
     
     probas,newlabellist,notfound = subset_probas(Df,fewlabels)
 
@@ -128,7 +136,7 @@ def tagging_validate(Df,fewlabels=fewlabels,dict_allcats=dict_allcats):
 
     ### And Finally let's do an estimation of BioPhony, Antropophony and Geophony level using audio tagging results 
     ### For that, we group the categories accordingly : 
-    Df_new = calculate_macro_categories(Df_new)
+    Df_new = calculate_macro_categories(Df_new,macro_cat)
     
     return Df_new
 
@@ -136,8 +144,15 @@ def tagging_validate(Df,fewlabels=fewlabels,dict_allcats=dict_allcats):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Script to regroup tagging output into a csv file')
     parser.add_argument('--input', default=None, type=str, help='Path to csv file')
+    parser.add_argument('--macro-json', default=None, type=str, help='Optional path to JSON file defining macro categories')
 
     args = parser.parse_args()
+
+    ## load macro categories json if provided
+    macro_cat_loaded = None
+    if args.macro_json:
+        with open(args.macro_json, 'r') as jf:
+            macro_cat_loaded = json.load(jf)
 
     ## the filename is extracted from the input path but adding the "validated" suffix
     
@@ -147,6 +162,6 @@ if __name__ == '__main__':
     
     Df = pd.read_csv(args.input)
 
-    Df_new = calculate_macro_categories(Df)
+    Df_new = calculate_macro_categories(Df, macro_cat_loaded)
 
     Df_new.sort_values(by=['datetime','start']).to_csv(CSV_SAVE,index=False)

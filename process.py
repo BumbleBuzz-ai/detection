@@ -4,9 +4,9 @@ from tqdm import tqdm
 import pandas as pd
 from utils import metadata
 from utils import dataloader
-from utils.tagging_validation import tagging_validate
+from utils.tagging_validation import tagging_validate,DEFAULT_MACRO_CAT
 from models import PANNS_Model,inference
-
+import json
 def main():
     parser = argparse.ArgumentParser(description='Script to process sound files recorded by Audiomoth ')
     parser.add_argument('--data_path', default='example/audio/0002/', type=str, help='Path to wav files')
@@ -18,6 +18,7 @@ def main():
     parser.add_argument('--save_audio_flac', default=1, type=int, help='Saving audio in flac format (needed to run visualization tool)')
     parser.add_argument('--multiprocessing', default=1, type=int, help='Number of processes to use for data loading')
     parser.add_argument('--batch_size', default=12, type=int, help='Size of the batch for data loading')
+    parser.add_argument('--macro-json', default=None, type=str, help='Optional path to JSON file defining macro categories')
     args = parser.parse_args()
 
     AUDIO_FORMAT = args.audio_format
@@ -30,6 +31,15 @@ def main():
     audio_savepath = os.path.join(args.save_path, f'audio_{args.name}')
     if not os.path.exists(audio_savepath):
         os.makedirs(audio_savepath)
+
+    # get json file 
+    if args.macro_json is not None:
+        with open(args.macro_json, 'r') as jf:
+            macro_cat = json.load(jf)
+        print(f'Loaded macro categories from {args.macro_json}')
+    else:
+        print('Using default macro categories')
+        macro_cat = DEFAULT_MACRO_CAT
 
     # get meta data file
     df_files = metadata.metadata_generator(args.data_path, AUDIO_FORMAT)
@@ -65,7 +75,7 @@ def main():
             for key in info['ecoac'].keys():
                 df_site[key].append(float(info['ecoac'][key].numpy()[idx])) 
 
-    Df_tagging = tagging_validate(df_site)
+    Df_tagging = tagging_validate(df_site,macro_cat=macro_cat)
 
 
     ## Dataframe with only ecoacoustic indices and important metadata 
