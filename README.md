@@ -1,4 +1,4 @@
-Automatic Audio tagging of large collection of soundscapes using PANNs - specific branch for BumbleBuzz project.
+Automatic Audio tagging of large collection of soundscapes using PANNs.
 
 ## Requirements
 
@@ -18,7 +18,7 @@ Install the following dependencies (versions should not matter) using your favor
 ## How to use
 
 First, create a directory with wav audio files named YYMMDD_HHMMSS.wav/flac or What_EVER_YYMMDD_HHMMSS.wav/flac.
-Then, use process.py to perform buzz detection (+many other audio tagging).
+Then, use process.py to perform audio tagging.
 Finally, use the dash_app.py script to run the web application.
 
 ![plot](image.png)
