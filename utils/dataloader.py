@@ -32,7 +32,7 @@ class Silent_dataset(Dataset):
         wav = torch.tensor(wav_o).view(1, len(wav_o))
         
         if self.save_audio:
-            torchaudio.save(os.path.join(self.savepath, self.meta['date'][idx].strftime('%Y%m%d_%H%M%S')+ '.flac'), wav, sr, format = 'flac')
+            torchaudio.save(os.path.join(self.savepath, self.meta['date'][idx].strftime('%Y%m%d_%H%M%S')+ '.flac'), wav, sr)
 
         # Compute ecoacoustic indices
         ecoac = compute_ecoacoustics(wav_o)
